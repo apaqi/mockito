@@ -1,0 +1,22 @@
+@startuml
+UnitTest -> Mockito: 1: mock（A.class）
+Mockito -> MockitoCore: 2: mock(Class<T> classToMock, MockSettings mockSettings)
+MockitoCore-> MockUtil: 3: createMock(MockCreationSettings<T> settings)
+MockUtil-> SubclassByteBuddyMockMaker: 4: createMock(MockCreationSettings<T> settings, MockHandler handler)[plugin]
+SubclassByteBuddyMockMaker-> SubclassByteBuddyMockMaker: 5:  createMockType(MockFeatures<T> features)
+SubclassByteBuddyMockMaker->  SubclassBytecodeGenerator: 6:  mockClass
+SubclassByteBuddyMockMaker<--  SubclassBytecodeGenerator: 7:  proxy.class
+SubclassByteBuddyMockMaker-> DefaultInstantiatorProvider: 8:  newInstance(mockedProxyType)
+SubclassByteBuddyMockMaker<--  DefaultInstantiatorProvider: 9:  proxy.object
+SubclassByteBuddyMockMaker-> SubclassByteBuddyMockMaker: 10:  ensureMockIsAssignableToMockedType
+MockUtil<--  SubclassByteBuddyMockMaker: 11:  proxy.object
+MockitoCore<--  MockUtil: 12:  proxy.object
+MockitoCore->  ThreadSafeMockingProgress: 13: mockingProgress()
+MockitoCore<--   ThreadSafeMockingProgress: 14: MockingProgress
+ThreadSafeMockingProgress->   MockingProgressImpl: 15: mockingStarted(mock, creationSettings)
+Mockito<--   MockitoCore: 16:  proxy.object
+UnitTest<--   Mockito: 16:  proxy.object
+
+
+
+@enduml
