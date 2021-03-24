@@ -6,7 +6,14 @@ MockUtil-> MockHandler: 4.1: createMockHandler(settings);
 MockUtil-> SubclassByteBuddyMockMaker: 4.2: createMock(MockCreationSettings<T> settings, MockHandler handler)[plugin]
 SubclassByteBuddyMockMaker-> SubclassByteBuddyMockMaker: 5:  createMockType(MockFeatures<T> features)
 SubclassByteBuddyMockMaker->  SubclassBytecodeGenerator: 6:  mockClass
-SubclassByteBuddyMockMaker<--  SubclassBytecodeGenerator: 7:  proxy.class
+SubclassByteBuddyMockMaker<--  SubclassBytecodeGenerator: 7:  proxy.class(此时可查看下生成的class)
+note left
+    生成List接口代理class中的方法示例：
+      public List subList(int paramInt1, int paramInt2) {
+        return (MockAccess)MockMethodInterceptor.DispatcherDefaultingToRealMethod.interceptAbstract(this, this.mockitoInterceptor, null, cachedValue$PabKqcAO$idijvh3, new Object[] { Integer.valueOf(paramInt1), Integer.valueOf(paramInt2) });
+      }
+      //interceptAbstract方法会掉MockHandlerImpl#handle方法
+end note
 SubclassByteBuddyMockMaker-> DefaultInstantiatorProvider: 8:  newInstance(mockedProxyType)
 SubclassByteBuddyMockMaker<--  DefaultInstantiatorProvider: 9:  proxy.object
 SubclassByteBuddyMockMaker-> SubclassByteBuddyMockMaker: 10:  ensureMockIsAssignableToMockedType
