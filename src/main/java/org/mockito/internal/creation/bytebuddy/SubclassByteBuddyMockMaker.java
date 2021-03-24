@@ -39,11 +39,13 @@ public class SubclassByteBuddyMockMaker implements ClassCreatingMockMaker {
 
     @Override
     public <T> T createMock(MockCreationSettings<T> settings, MockHandler handler) {
+        //此方法很重要，生成代理类class
         Class<? extends T> mockedProxyType = createMockType(settings);
 
         Instantiator instantiator = Plugins.getInstantiatorProvider().getInstantiator(settings);
         T mockInstance = null;
         try {
+            //生成代理类实例
             mockInstance = instantiator.newInstance(mockedProxyType);
             MockAccess mockAccess = (MockAccess) mockInstance;
             mockAccess.setMockitoInterceptor(new MockMethodInterceptor(handler, settings));

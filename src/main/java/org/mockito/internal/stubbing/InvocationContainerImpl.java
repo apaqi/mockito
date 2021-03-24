@@ -52,6 +52,7 @@ public class InvocationContainerImpl implements InvocationContainer, Serializabl
     }
 
     public void addAnswer(Answer answer, Strictness stubbingStrictness) {
+        // 移除最近一次方法调用保存的invocation信息
         registeredInvocations.removeLast();
         addAnswer(answer, false, stubbingStrictness);
     }
@@ -69,11 +70,22 @@ public class InvocationContainerImpl implements InvocationContainer, Serializabl
         if (answer instanceof ValidableAnswer) {
             ((ValidableAnswer) answer).validateFor(invocation);
         }
-
+        /**
+         * 将打桩的自定义返回值添加到stubbed中之后，就可以在方法调用中根据方法+入参从stubbed中匹配自定义的返回值。
+         * 这里有一个连续方式和非连续方式，是什么意思呢，连续方式就是说，针对同一个方法的多次调用，
+         * 可以按照顺序自定义不同的返回值，如果调用次数超过了自定义返回值个数，默认后续以最后一个自定义返回值为准
+         *
+         *DubboRemoteFacade remoteFacade = Mockito.mock(DubboRemoteFacade.class);
+         * Mockito.when(remoteFacade.world("aaa")).thenReturn("111").thenReturn("222"); // 连续方式
+         * System.out.println(remoteFacade.world("aaa")); // 111
+         * System.out.println(remoteFacade.world("aaa")); // 222
+         * //System.out.println(remoteFacade.world("aaa")); // 222，如果再调用一次的话
+         */
         synchronized (stubbed) {
+            // 连续方式
             if (isConsecutive) {
                 stubbed.getFirst().addAnswer(answer);
-            } else {
+            } else {// 非连续
                 Strictness effectiveStrictness = stubbingStrictness != null ? stubbingStrictness : this.mockStrictness;
                 stubbed.addFirst(new StubbedInvocationMatcher(answer, invocationForStubbing, effectiveStrictness));
             }

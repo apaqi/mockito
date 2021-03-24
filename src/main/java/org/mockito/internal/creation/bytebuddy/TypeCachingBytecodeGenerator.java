@@ -29,11 +29,13 @@ class TypeCachingBytecodeGenerator extends ReferenceQueue<ClassLoader> implement
     public <T> Class<T> mockClass(final MockFeatures<T> params) {
         try {
             ClassLoader classLoader = params.mockedType.getClassLoader();
+            //生成对应代理类class，优先从缓存中查询，如果缓存不命中再生成。
             return (Class<T>) typeCache.findOrInsert(classLoader,
                     new MockitoMockKey(params.mockedType, params.interfaces, params.serializableMode, params.stripAnnotations),
                     new Callable<Class<?>>() {
                         @Override
                         public Class<?> call() throws Exception {
+                            // 动态生成代理类class
                             return bytecodeGenerator.mockClass(params);
                         }
                     }, BOOTSTRAP_LOCK);

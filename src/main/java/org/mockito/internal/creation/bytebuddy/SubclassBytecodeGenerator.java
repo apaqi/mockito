@@ -21,6 +21,7 @@ import org.mockito.internal.creation.bytebuddy.ByteBuddyCrossClassLoaderSerializ
 import org.mockito.internal.creation.bytebuddy.MockMethodInterceptor.DispatcherDefaultingToRealMethod;
 import org.mockito.mock.SerializableMode;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.annotation.Annotation;
@@ -79,6 +80,7 @@ class SubclassBytecodeGenerator implements BytecodeGenerator {
 
     @Override
     public <T> Class<? extends T> mockClass(MockFeatures<T> features) {
+        //动态生成代理类class
         ClassLoader classLoader = new MultipleParentClassLoader.Builder()
             .appendMostSpecific(getAllTypes(features.mockedType))
             .appendMostSpecific(features.interfaces)
@@ -141,6 +143,7 @@ class SubclassBytecodeGenerator implements BytecodeGenerator {
                 : features.mockedType.getAnnotations())
             .implement(new ArrayList<Type>(features.interfaces))
             .method(matcher)
+            //DispatcherDefaultingToRealMethod
             .intercept(dispatcher)
             .transform(withModifiers(SynchronizationState.PLAIN))
             .attribute(features.stripAnnotations
@@ -169,9 +172,18 @@ class SubclassBytecodeGenerator implements BytecodeGenerator {
                 .or(returns(isPackagePrivate()))
                 .or(hasParameters(whereAny(hasType(isPackagePrivate())))));
         }
-        return builder.make()
-            .load(classLoader, loader.resolveStrategy(features.mockedType, classLoader, localMock))
-            .getLoaded();
+        DynamicType.Loaded<T> load = builder.make()
+            .load(classLoader, loader.resolveStrategy(features.mockedType, classLoader, localMock));
+
+        DynamicType.Default dynamicType  = (DynamicType.Default)load;
+        //在 Mockito 中会主动调用 MockMethodInterceptor 中的 doIntercept 函数中，从而最终调用 InternalMockHandler.handle() 函数，其中含有调用参数等信息。
+        //因此当mock代理对象的函数被调用之后，最终会调用MockHandlerImpl.handle() 函数，具体实现如下：
+        /*try {
+            dynamicType.saveIn(new File("D:\\data\\test\\wpx"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+        return load.getLoaded();
     }
 
     private <T> Collection<Class<? super T>> getAllTypes(Class<T> type) {

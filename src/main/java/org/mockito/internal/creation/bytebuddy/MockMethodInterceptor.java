@@ -113,6 +113,16 @@ public class MockMethodInterceptor implements Serializable {
                                           );
         }
 
+        /**
+         *
+         * @param mock 当前代理类
+         * @param interceptor 方法拦截器
+         * @param stubValue stub值，这里为null
+         * @param invokedMethod 当前调用方法
+         * @param arguments 方法入参
+         * @return
+         * @throws Throwable
+         */
         @SuppressWarnings("unused")
         @RuntimeType
         public static Object interceptAbstract(@This Object mock,

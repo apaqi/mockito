@@ -32,6 +32,17 @@ public class DefaultInvocationFactory implements InvocationFactory {
         return createInvocation(target, method, args, superMethod, settings);
     }
 
+    /**
+     * 当前方法调用的上下文信息基本都有了，基于这些信息会创建一个InterceptedInvocation对象，
+     * 来表示一次方法调用
+     * @param mock
+     * @param invokedMethod
+     * @param arguments
+     * @param realMethod
+     * @param settings
+     * @param location
+     * @return
+     */
     public static InterceptedInvocation createInvocation(Object mock, Method invokedMethod, Object[] arguments, RealMethod realMethod, MockCreationSettings settings, Location location) {
         return new InterceptedInvocation(
             new MockWeakReference<Object>(mock),
@@ -39,6 +50,7 @@ public class DefaultInvocationFactory implements InvocationFactory {
             arguments,
             realMethod,
             location,
+            ////每个InterceptedInvocation对象都有一个唯一序号
             SequenceNumber.next()
         );
     }
